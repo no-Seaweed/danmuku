@@ -1,0 +1,177 @@
+<!--jquery.danmu.js (//github.com/chiruom/danmu/) - Licensed under the MIT license
+
+contributor: S.Fang -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>假装是bilibili</title>
+      <link href="css/main.css" rel="stylesheet" type="text/css" /> 
+      <script src="/js/jquery-2.1.4.min.js"></script>
+      <script src="/js/jquery.danmu.js"></script>
+</head>
+<body>
+    <div class="main" data-json='<%=JSON.stringify(data)%>'>
+        <div id = "danmuarea">
+            <div id="danmu">
+              <video width="900" height="100%" controls="controls" src="./video/example.mp4" type="video/mp4" id="media">
+              </video>  
+            </div>
+        </div>
+        
+        <div class="ctr">
+            <button type="button" onclick="resumer()" class="button_sty">Start</button>
+            <button type="button" onclick="pauser()" class="button_sty">Stop</button>
+            
+            显示弹幕:<input type='checkbox' checked='checked' id='ishide' value='is' onchange='changehide()'>
+            弹幕透明度:<input type="range" name="op" id="op" onchange="op()" value="100">
+            当前弹幕运营时间(秒):<span id="time" class="button_sty"></span><br>
+            设置当前弹幕时间(秒)： <input type="text" id="set_time" max=20 />
+      <button type="button"  onclick="settime()">设置</button>
+      <br>
+            发弹幕:
+            <div class="option_set">
+            弹幕颜色:<select class="option_sty" name="color" id="color">
+                <option value="white">白色</option>
+                <option value="red">红色</option>
+                <option value="green">绿色</option>
+                <option value="blue">蓝色</option>
+                <option value="yellow">黄色</option>
+            </select>
+                    <select class="option_sty" name="size" id="text_size">
+                        <option value="1">大文字</option>
+                        <option value="0">小文字</option>
+                    </select>
+                    <select class="option_sty" name="position" id="position">
+                        <option value="0">滚动</option>
+                        <option value="1">顶端</option>
+                        <option value="2">底端</option>
+                    </select>
+            </div>
+                <input type="textarea" id="text" max=300 />
+                <button type="button" onclick="send()">send</button>
+            </div>
+            
+    </div>
+    <script type="text/javascript">
+    $("#danmu").danmu({
+        left:0,
+        top:0,
+        height:"100%",
+        width:"100%",
+        speed:10000, 
+        opacity:1,
+        font_size_small:16,
+        font_size_big:24,
+        top_botton_danmu_time:60000 
+    });   
+        
+        var data=$(".main").data('json');
+          
+        $("#danmu").danmu("addDanmu",data);
+
+        
+        
+        
+        
+    var Media = document.getElementById("media");   
+    Media.addEventListener('play',function(){
+        resumer();
+    })
+    Media.addEventListener('pause',function(){
+        pauser();
+    })
+    Media.addEventListener('ended',function(){
+       $('#danmu').danmu("setTime",0);
+    }) 
+     
+    eventTester = function(e){  
+    Media.addEventListener(e,function(){  
+        console.log(Math.ceil(Media.currentTime*10),e);  
+    });  
+}   
+    $('#danmu').danmu("setTime",eventTester("timeupdate"));
+    timedCount();
+        
+        Media.onseeked=function(){
+            console.log('update');
+            var t=Math.ceil(Media.currentTime*10);
+             $('#danmu').danmu("setTime",t);
+        }
+        function timedCount(){
+            $("#time").text(Math.ceil(Media.currentTime*10));
+            //$('#danmu').data("nowTime",Math.ceil(Media.currentTime*10));
+            //$('#danmu').danmu("setTime",Math.ceil(Media.currentTime*10));
+            //$("#time").text($('#danmu').data("nowTime"));
+            //$('#danmu').danmu("setTime",$('#danmu').data("nowTime"));
+            //console.log($('#danmu').data("nowTime"));
+            t=setTimeout("timedCount()", 50);
+            
+        }
+        
+        function pauser(){
+            $('#danmu').danmu('danmuPause');
+        }    
+        function resumer(){
+            Media.play();
+            $('#danmu').danmu('danmuResume');
+        }
+        function send(){
+            var text = document.getElementById('text').value;
+            var color = document.getElementById('color').value;
+            var position = document.getElementById('position').value;
+            var time = (Math.ceil(Media.currentTime))*10;
+            var size =document.getElementById('text_size').value;
+            var newdata={
+                text:text,
+                color:color,
+                position: position,
+                time: time,
+                size: size
+                };
+            $.ajax({
+                url:"/sql/adddm",
+                type:"GET",
+                data:newdata,
+                })
+                updateDanmu(newdata);  
+            }
+        function op(){
+            var op=document.getElementById('op').value;
+            $('#danmu').danmu("setOpacity",op/100);
+            }
+        
+        function changehide(){
+            var op = document.getElementById('op').value;
+            op = op / 100;
+            if (document.getElementById("ishide").checked) {
+              $("#danmu").danmu("setOpacity",1)
+            } else {
+              $("#danmu").danmu("setOpacity",0)
+            }
+        }
+    
+        function updateDanmu(new_obj){
+            $.ajax({
+                url:"/sql/readsql",
+                type:"GET",
+                success:function(){
+                    $('#danmu').danmu("addDanmu",new_obj);
+                }})
+        }
+        
+        function settime(){
+            var t=document.getElementById("set_time").value;
+            t=parseInt(t)
+            $('#danmu').danmu("setTime",t);
+            $('#danmu').data("nowTime",t);
+          }
+          
+        
+        //to be continued
+        function thumbup(){}
+    </script> 
+    
+</body>
+</html>

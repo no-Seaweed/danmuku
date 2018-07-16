@@ -1,0 +1,34 @@
+body {
+    user-select:none;
+    }
+.main{
+    
+}
+pre {
+      line-height: 2em;
+      font-family: "Microsoft YaHei" ! important;
+    }
+h4 {
+      line-height: 2em;
+}
+#danmuarea {
+    position: relative;
+    background: #222;
+    width:50rem;
+    height: 445px;
+    margin:0 25%;
+    }
+.ctr {
+    font-size: 1em;
+    line-height: 2em;
+    width: 50rem;
+    margin: 0 25%;
+}
+.button_sty{
+    margin-right: 1rem;
+}
+
+.option_sty{
+    border-radius: 5px 5px 5px 5px;
+}
+
